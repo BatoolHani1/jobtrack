@@ -1,21 +1,4 @@
-<svg width="900" height="700" viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="purple" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#460B77"></stop>
-      <stop offset="100%" stop-color="#B968FF"></stop>
-    </linearGradient>
-
-    <style>
-      .title{
-        font:700 92px "Poppins","Segoe UI",Arial,sans-serif;
-      }
-      .tagline{
-        font:500 26px "Poppins","Segoe UI",Arial,sans-serif;
-        letter-spacing:6px;
-      }
-    </style>
-  </defs>
-
+<svg viewBox="200 0 460 480" xmlns="http://www.w3.org/2000/svg">
   <!-- Clipboard -->
   <rect x="230" y="70" width="300" height="390" rx="28" fill="#ffffff" stroke="#460B77" stroke-width="12"></rect>
 
@@ -60,20 +43,4 @@
   <path d="M480 295v-14c0-8 6-14 14-14h22c8 0 14 6 14 14v14" fill="none" stroke="#460B77" stroke-width="6"></path>
 
   <rect x="500" y="319" width="12" height="10" rx="2" fill="white"></rect>
-
-  <!-- Title -->
-  <text x="450" y="590" text-anchor="middle" class="title">
-
-      <tspan fill="#460B77">Job</tspan>
-      <tspan fill="url(#purple)">Tracking</tspan>
-
-  </text>
-
-  <!-- Tagline -->
-  <text x="450" y="640" text-anchor="middle" class="tagline" fill="#756580">
-
-      TRACK. ORGANIZE. LAND YOUR NEXT JOB.
-
-  </text>
-
 </svg>

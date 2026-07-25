@@ -6,15 +6,19 @@ export default function LandingPage() {
     <>
       <header className="border-b border-border bg-surface">
         <div className="flex items-center justify-between px-6 py-4 md:px-8 lg:px-12">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/jobtrack-logo.svg"
-              alt="JobTrack"
-              width={180}
-              height={140}
+              src="/jobtrack-icon.svg"
+              alt=""
+              width={230}
+              height={240}
               priority
-              className="h-24 w-auto"
+              className="h-10 w-auto"
             />
+            <span className="text-lg font-semibold">
+              <span className="text-primaryDark">Job</span>
+              <span className="text-primary">Track</span>
+            </span>
           </Link>
 
           <Link
@@ -26,7 +30,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative flex min-h-[calc(100vh-128px)] items-center overflow-hidden bg-background">
+      <section className="relative flex min-h-[calc(100vh-72px)] items-center overflow-hidden bg-background">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-lavenderSoft blur-3xl"

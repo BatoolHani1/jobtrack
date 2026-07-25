@@ -1,8 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-border bg-surface px-4 md:px-6">
+    <header className="sticky top-0 z-20 flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3 md:px-6">
       <div className="flex items-center gap-3">
         <label
           htmlFor="sidebar-toggle"
@@ -19,10 +20,17 @@ export default function Navbar() {
         </label>
 
         <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
-            JT
+          <Image
+            src="/jobtrack-icon.svg"
+            alt=""
+            width={230}
+            height={240}
+            className="h-10 w-auto"
+          />
+          <span className="text-lg font-semibold">
+            <span className="text-primaryDark">Job</span>
+            <span className="text-primary">Track</span>
           </span>
-          <span className="text-lg font-semibold text-text">JobTrack</span>
         </Link>
       </div>
 
