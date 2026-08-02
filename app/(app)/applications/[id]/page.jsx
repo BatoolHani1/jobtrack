@@ -13,12 +13,20 @@ export default async function ApplicationDetailPage({ params }) {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <Link
-        href="/applications"
-        className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
-      >
-        Back to applications
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/applications"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
+        >
+          Back to applications
+        </Link>
+        <Link
+          href={`/applications/${application.id}/edit`}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
+        >
+          Edit
+        </Link>
+      </div>
 
       <div className="flex flex-col gap-6 rounded-xl border border-border bg-surface p-6 shadow-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

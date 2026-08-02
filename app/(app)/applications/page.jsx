@@ -104,6 +104,12 @@ export default async function ApplicationsPage() {
                   >
                     View
                   </Link>
+                  <Link
+                    href={`/applications/${application.id}/edit`}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
+                  >
+                    Edit
+                  </Link>
                 </div>
               </div>
             );
