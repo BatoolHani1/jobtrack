@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getApplicationById } from "@/lib/applications";
 import StatusBadge from "@/components/StatusBadge";
+import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 
 export default async function ApplicationDetailPage({ params }) {
   const { id } = await params;
@@ -81,13 +82,14 @@ export default async function ApplicationDetailPage({ params }) {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
         <Link
           href={`/applications/${application.id}/edit`}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
         >
           Edit
         </Link>
+        <DeleteApplicationButton id={application.id} />
       </div>
     </div>
   );

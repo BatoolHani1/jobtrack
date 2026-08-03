@@ -55,3 +55,12 @@ export async function updateApplication(formData) {
   revalidatePath(`/applications/${id}`);
   redirect(`/applications/${id}`);
 }
+
+export async function deleteApplication(formData) {
+  const id = formData.get("id");
+
+  await prisma.application.delete({ where: { id } });
+
+  revalidatePath("/applications");
+  redirect("/applications");
+}
