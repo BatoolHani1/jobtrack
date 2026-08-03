@@ -11,6 +11,8 @@
   --color-border: #e5ddf2;
   --color-text: #24152f;
   --color-muted: #756580;
+  --color-danger: #D32F4A;
+  --color-dangerDark: #A11F35;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
