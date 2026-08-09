@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { redirect } from "next/navigation";
+import { signIn } from "@/auth";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -39,5 +39,9 @@ export async function signup(prevState, formData) {
     throw error;
   }
 
-  redirect("/login");
+  await signIn("credentials", {
+    email: result.data.email,
+    password: result.data.password,
+    redirectTo: "/dashboard",
+  });
 }
