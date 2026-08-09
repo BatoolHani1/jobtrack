@@ -2,7 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
+import { auth } from "@/auth";
 
 export async function createApplication(formData) {
   const title = formData.get("title");
@@ -12,7 +13,7 @@ export async function createApplication(formData) {
   const notes = formData.get("notes");
   const link = formData.get("link");
 
-  const user = await prisma.user.findFirst();
+  const session = await auth();
 
   await prisma.application.create({
     data: {
@@ -22,7 +23,7 @@ export async function createApplication(formData) {
       appliedDate: new Date(appliedDate),
       notes: notes === "" ? null : notes,
       link: link === "" ? null : link,
-      userId: user.id,
+      userId: session.user.id,
     },
   });
 
@@ -38,6 +39,16 @@ export async function updateApplication(formData) {
   const appliedDate = formData.get("appliedDate");
   const notes = formData.get("notes");
   const link = formData.get("link");
+
+  const session = await auth();
+
+  const existing = await prisma.application.findFirst({
+    where: { id, userId: session.user.id },
+  });
+
+  if (!existing) {
+    notFound();
+  }
 
   await prisma.application.update({
     where: { id },
@@ -58,6 +69,16 @@ export async function updateApplication(formData) {
 
 export async function deleteApplication(formData) {
   const id = formData.get("id");
+
+  const session = await auth();
+
+  const existing = await prisma.application.findFirst({
+    where: { id, userId: session.user.id },
+  });
+
+  if (!existing) {
+    notFound();
+  }
 
   await prisma.application.delete({ where: { id } });
 

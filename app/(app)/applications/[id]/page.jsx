@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { getApplicationById } from "@/lib/applications";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 
 export default async function ApplicationDetailPage({ params }) {
   const { id } = await params;
-  const application = await getApplicationById(id);
+  const session = await auth();
+  const application = await getApplicationById(id, session.user.id);
 
   if (!application) {
     notFound();

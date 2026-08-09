@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import { getApplications } from "@/lib/applications";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
@@ -8,7 +9,8 @@ export const metadata = {
 };
 
 export default async function ApplicationsPage() {
-  const applications = await getApplications();
+  const session = await auth();
+  const applications = await getApplications(session.user.id);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">

@@ -1,6 +1,7 @@
 import { getApplicationById } from "@/lib/applications";
 import ApplicationForm from "@/components/ApplicationForm";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { updateApplication } from "@/app/(app)/applications/actions";
 
 export const metadata = {
@@ -9,7 +10,8 @@ export const metadata = {
 
 export default async function EditApplicationPage({ params }) {
   const { id } = await params;
-  const application = await getApplicationById(id);
+  const session = await auth();
+  const application = await getApplicationById(id, session.user.id);
 
   if (!application) {
     notFound();
