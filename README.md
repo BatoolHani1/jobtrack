@@ -11,8 +11,25 @@ This is my field training project at FiberTech Jo, built with Next.js over 6 wee
 - JavaScript, no TypeScript
 - Tailwind CSS 4
 - Prisma ORM with SQLite
+- Auth.js (NextAuth v5) for login and signup
+- Zod for form validation
+- bcrypt for password hashing
 
 ## Running it
+
+You need a `.env` file before the database commands will work. Copy the example and fill it in:
+
+```bash
+cp .env.example .env
+```
+
+It needs two things. `DATABASE_URL` points at the SQLite file, and `AUTH_SECRET` is the key used to sign the session cookie. You can generate a secret with:
+
+```bash
+openssl rand -base64 32
+```
+
+Then:
 
 ```bash
 npm install
@@ -22,6 +39,13 @@ npm run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000).
+
+The seed script creates one user you can log in as:
+
+- Email: `batool@example.com`
+- Password: `password123`
+
+Or sign up for a new account at `/signup`, which starts you off with an empty list.
 
 The database is a single SQLite file at `prisma/dev.db`. It isn't committed to the repo, since the migration files in `prisma/migrations/` recreate it from scratch and the seed script fills it with sample data.
 
@@ -57,7 +81,7 @@ Pages so far:
 | `/applications`     | empty list + "Add Application" button |
 | `/applications/new` | form UI only, doesn't save anything   |
 
-"Get Started" links straight to `/dashboard` for now since there's no auth yet.
+At this point "Get Started" linked straight to `/dashboard`, since there was no auth yet.
 
 Tagged as `v1-week1`.
 
@@ -91,15 +115,47 @@ What I built:
 - Queries moved into `lib/applications.js` so the pages don't hold Prisma calls directly
 - The three server actions live together in `app/(app)/applications/actions.js`
 
-The create and edit pages share one `ApplicationForm` component. It takes the action to run and, optionally, an existing application to fill the fields from. Nothing in it uses `useState`, since a plain form with `name` attributes on the inputs gives the server action everything it needs, so it stays a server component like the rest of the app.
+The create and edit pages share one `ApplicationForm` component. It takes the action to run and, optionally, an existing application to fill the fields from. Nothing in it uses `useState`, since a plain form with `name` attributes on the inputs gives the server action everything it needs, so at this point it was still a server component like the rest of the app. That changed in week 4.
 
 One thing I ran into: after saving a new application and redirecting to the list, the new row didn't show up. It was in the database the whole time, Next.js was just serving a cached render of the page. The fix is `revalidatePath("/applications")` inside the action, and it has to come before `redirect(...)`, because `redirect` works by throwing so nothing after it runs.
 
 Deleting an application also deletes its interviews, and I didn't write any code for that. It comes from `onDelete: Cascade` in the schema from week 2, so the database handles it.
 
-Applications are still assigned to the seeded user, since there's no login yet. The create action looks that user up with `prisma.user.findFirst()`. That line goes away in week 4 when auth arrives and there's a real session to read from.
+Applications were still assigned to the seeded user at this point, since there was no login yet. The create action looked that user up with `prisma.user.findFirst()`. That line went away in week 4, once there was a real session to read from.
 
 Tagged as `v1-week3`.
+
+### Week 4: authentication and validation
+
+Week 4 turned JobTrack from something one person uses into something several people can. Before this week every application belonged to the single user the seed script created. Now you sign up, log in, and only ever see your own.
+
+What I built:
+
+- A signup page at `/signup` that creates a user with a bcrypt hashed password
+- A login page at `/login` using Auth.js with a credentials provider
+- Every query scoped to the logged in user, so two accounts never see each other's applications
+- Route protection, so visiting `/dashboard` or `/applications` while logged out sends you to the login page
+- A sign out button at the bottom of the sidebar
+- The logged in user's name in the navbar, falling back to their email if they haven't set one
+- Zod validation on the application form, with error messages under each field
+
+There are two auth files and that's on purpose. `auth.config.js` holds the configuration and nothing else. `auth.js` holds the credentials provider, which imports bcrypt and Prisma. They're split because route protection runs on the Edge runtime, where neither bcrypt nor Prisma works, so the proxy file can only import the config half.
+
+Signing up logs you straight in rather than sending you to the login page afterwards. The `signIn` call has to sit outside the `try/catch` around creating the user, for the same reason `redirect` did in week 3: it works by throwing, and the catch block would swallow it.
+
+Applications are scoped in two places. The pages read the session and pass the user id into the queries in `lib/applications.js`, so the list and detail pages only ever return your own rows. The edit and delete actions look the application up by both id and user id before touching it, and return a 404 if nothing comes back. That second check is the one that actually matters, because a server action is just a POST and someone could send one carrying another user's application id.
+
+Route protection sits on top of that as a separate layer. It stops the request before the page renders, which is faster and means a logged out visitor never sees a broken page. But it's a convenience, not the security boundary. The checks inside the actions are what protect the data.
+
+The form has two layers of validation for the same reason. `required` and `type="url"` are the browser's checks, and they're instant and free. Zod runs on the server after submit and is the one that can't be switched off in dev tools. Both are worth having: the browser catches honest mistakes without a round trip, and Zod is what stops bad data reaching the database.
+
+One thing I ran into: Next.js 16 renamed the `middleware.js` file convention to `proxy.js`. A leftover `middleware.js` is ignored with no build error and no warning at all, so the route protection would have quietly done nothing and every page would have stayed public. Nothing tells you it isn't running. The way I confirmed it was working was seeing `Proxy` listed in the `next build` output.
+
+Another one: after a failed submit, React 19 resets a form that uses the `action` prop. That wiped every field, so fixing one wrong value meant retyping the whole form. The fix was to return the submitted values from the action alongside the errors, and use those as the `defaultValue` for each input. The inputs stay uncontrolled, so there's still no `useState` or `onChange` anywhere in the form.
+
+`ApplicationForm` did become a client component this week. Showing errors that come back from the server needs `useActionState`, and that's a React hook. It and `SidebarNav` are the only two client components in the app.
+
+Tagged as `v1-week4`.
 
 ## Data model
 
@@ -113,6 +169,7 @@ erDiagram
     User {
         string id PK
         string email UK
+        string password
         string name "optional"
     }
     Application {
@@ -143,15 +200,29 @@ A few decisions worth writing down:
 - `appliedDate` is the date I actually applied, which is different from `createdAt`, the date the row was saved
 - `status` is a plain string instead of an enum because SQLite doesn't support enums. The values used in the app are Applied, Interview, Offer and Rejected
 - There are indexes on both foreign keys, since looking up children by their parent is the query that runs most often
+- `password` stores a bcrypt hash, never the password itself. It was added in week 4
+
+There's no session table, which looks like something is missing until you know why. Sessions are stored in a signed cookie rather than the database, so there's nothing to keep track of on our side.
 
 ## Folder structure
 
 ```
+auth.config.js                       auth settings and the route protection rule
+auth.js                              the credentials provider, bcrypt and Prisma live here
+proxy.js                             runs before every page and checks whether you're allowed in
 app/
   layout.js                          root layout, fonts + metadata
   page.js                            landing page
   globals.css                        brand colors as Tailwind tokens
   icon.svg                           favicon
+  login/
+    page.jsx
+    LoginForm.jsx                    reads callbackUrl so you land back where you were
+    actions.js
+  signup/
+    page.jsx
+    SignupForm.jsx
+    actions.js                       validates, hashes the password, then logs you in
   (app)/
     layout.js                        navbar + sidebar shell for the dashboard pages
     dashboard/page.jsx
@@ -162,8 +233,8 @@ app/
     applications/[id]/edit/page.jsx  edit form
 components/
   LayoutShell.jsx                    navbar + sidebar + page content
-  Navbar.jsx
-  Sidebar.jsx
+  Navbar.jsx                         shows who's logged in
+  Sidebar.jsx                        holds the sign out button
   SidebarNav.jsx                     handles the active link highlighting
   StatCard.jsx
   StatusBadge.jsx                    the status pill, and the colour for each status
@@ -171,7 +242,7 @@ components/
   DeleteApplicationButton.jsx        a form with a hidden id, not a link
 lib/
   prisma.js                          single Prisma client instance, reused across hot reloads
-  applications.js                    the queries the pages read from
+  applications.js                    the queries the pages read from, all scoped by user
 prisma/
   schema.prisma                      the data model
   seed.js                            sample data
