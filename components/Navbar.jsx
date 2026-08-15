@@ -1,7 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { auth } from "@/auth";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const session = await auth();
+  const displayName = session?.user?.name || session?.user?.email;
+  const initial = displayName?.charAt(0).toUpperCase();
+
   return (
     <header className="sticky top-0 z-20 flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3 md:px-6">
       <div className="flex items-center gap-3">
@@ -47,10 +52,10 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 border-l border-border pl-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-lavenderSoft text-sm font-medium text-text">
-            U
+            {initial}
           </span>
           <span className="hidden text-sm font-medium text-text sm:inline">
-            User
+            {displayName}
           </span>
         </div>
       </div>
