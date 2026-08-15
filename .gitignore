@@ -48,3 +48,4 @@ prisma/dev.db-journal
 CLAUDE.md
 .claude/
 !.env.example
+AGENTS.md
