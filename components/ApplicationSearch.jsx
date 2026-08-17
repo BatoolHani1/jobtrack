@@ -10,6 +10,7 @@ export default function ApplicationSearch() {
 
   const handleSearch = useDebouncedCallback((term) => {
     const params = new URLSearchParams(searchParams);
+    params.delete("page");
     if (term) {
       params.set("query", term);
     } else {
