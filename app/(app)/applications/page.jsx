@@ -3,14 +3,16 @@ import { auth } from "@/auth";
 import { getApplications } from "@/lib/applications";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
+import ApplicationSearch from "@/components/ApplicationSearch";
 
 export const metadata = {
   title: "Applications | JobTrack",
 };
 
-export default async function ApplicationsPage() {
+export default async function ApplicationsPage({ searchParams }) {
+  const { query = "" } = await searchParams;
   const session = await auth();
-  const applications = await getApplications(session.user.id);
+  const applications = await getApplications(session.user.id, query);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -27,6 +29,10 @@ export default async function ApplicationsPage() {
         >
           + Add Application
         </Link>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center">
+        <ApplicationSearch />
       </div>
 
       {applications.length === 0 ? (
