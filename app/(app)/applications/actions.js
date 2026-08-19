@@ -5,11 +5,12 @@ import { revalidatePath } from "next/cache";
 import { redirect, notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { z } from "zod";
+import { APPLICATION_STATUSES } from "@/lib/statuses";
 
 const applicationSchema = z.object({
   title: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company is required"),
-  status: z.enum(["Applied", "Interview", "Offer", "Rejected"]),
+  status: z.enum(APPLICATION_STATUSES),
   appliedDate: z
     .string()
     .min(1, "Applied date is required")

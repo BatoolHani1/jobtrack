@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { APPLICATION_STATUSES } from "@/lib/statuses";
 
 export default function ApplicationForm({ action, application, submitLabel }) {
   const appliedDateValue = application?.appliedDate?.toISOString().slice(0, 10);
@@ -67,10 +68,9 @@ export default function ApplicationForm({ action, application, submitLabel }) {
           aria-describedby="status-error"
           className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         >
-          <option>Applied</option>
-          <option>Interview</option>
-          <option>Offer</option>
-          <option>Rejected</option>
+          {APPLICATION_STATUSES.map((status) => (
+            <option key={status}>{status}</option>
+          ))}
         </select>
         <div id="status-error" aria-live="polite" aria-atomic="true">
           {state?.errors?.status?.map((error) => (
