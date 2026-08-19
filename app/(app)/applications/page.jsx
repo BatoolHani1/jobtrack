@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getApplications, getApplicationsPageCount } from "@/lib/applications";
+import { APPLICATION_STATUSES } from "@/lib/statuses";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 import ApplicationSearch from "@/components/ApplicationSearch";
+import ApplicationStatusFilter from "@/components/ApplicationStatusFilter";
 import ApplicationPagination from "@/components/ApplicationPagination";
 
 export const metadata = {
@@ -11,13 +13,14 @@ export const metadata = {
 };
 
 export default async function ApplicationsPage({ searchParams }) {
-  const { query = "", page } = await searchParams;
+  const { query = "", page, status } = await searchParams;
   const parsedPage = Math.floor(Number(page));
   const currentPage = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
+  const validatedStatus = APPLICATION_STATUSES.includes(status) ? status : "";
   const session = await auth();
   const [applications, totalPages] = await Promise.all([
-    getApplications(session.user.id, query, currentPage),
-    getApplicationsPageCount(session.user.id, query),
+    getApplications(session.user.id, query, validatedStatus, currentPage),
+    getApplicationsPageCount(session.user.id, query, validatedStatus),
   ]);
 
   return (
@@ -39,6 +42,7 @@ export default async function ApplicationsPage({ searchParams }) {
 
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center">
         <ApplicationSearch />
+        <ApplicationStatusFilter status={validatedStatus} />
       </div>
 
       {applications.length === 0 ? (
