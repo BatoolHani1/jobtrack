@@ -1,10 +1,11 @@
 import { auth } from "@/auth";
-import { getApplicationStatusCounts, getRecentApplications } from "@/lib/applications";
+import { getApplicationStatusCounts, getRecentApplications, getApplicationsPerMonth } from "@/lib/applications";
 import { APPLICATION_STATUSES } from "@/lib/statuses";
 import StatCard from "@/components/StatCard";
 import TotalApplicationsCard from "@/components/TotalApplicationsCard";
 import RecentApplications from "@/components/RecentApplications";
 import ApplicationsPieChart from "@/components/ApplicationsPieChart";
+import ApplicationsOverTimeChart from "@/components/ApplicationsOverTimeChart";
 
 export const metadata = {
   title: "Dashboard | JobTrack",
@@ -12,9 +13,10 @@ export const metadata = {
 
 export default async function DashboardPage() {
   const session = await auth();
-  const [statusCounts, recentApplications] = await Promise.all([
+  const [statusCounts, recentApplications, applicationsPerMonth] = await Promise.all([
     getApplicationStatusCounts(session.user.id),
     getRecentApplications(session.user.id),
+    getApplicationsPerMonth(session.user.id),
   ]);
   const total = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
 
@@ -51,6 +53,15 @@ export default async function DashboardPage() {
           </div>
         </section>
       </div>
+
+      <section className="rounded-xl border border-border bg-surface p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-text">
+          Applications Over Time
+        </h2>
+        <div className="mt-4">
+          <ApplicationsOverTimeChart data={applicationsPerMonth} />
+        </div>
+      </section>
     </div>
   );
 }
