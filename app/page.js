@@ -58,10 +58,10 @@ export default function LandingPage() {
 
           <div className="relative flex items-center justify-center">
             <Image
-              src="/jobtrack-illustration.png"
+              src="/jobtrack-illustration.webp"
               alt="Illustration of a job application tracking checklist"
-              width={1536}
-              height={1024}
+              width={1200}
+              height={800}
               priority
               className="h-auto w-full max-w-xl"
             />
