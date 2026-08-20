@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { getApplications, getApplicationsPageCount } from "@/lib/applications";
 import { APPLICATION_STATUSES } from "@/lib/statuses";
 import { formatDate } from "@/lib/format";
+import { buttonStyles } from "@/lib/buttonStyles";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 import ApplicationSearch from "@/components/ApplicationSearch";
@@ -36,7 +37,7 @@ export default async function ApplicationsPage({ searchParams }) {
         </div>
         <Link
           href="/applications/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primaryDark"
+          className={buttonStyles("primary")}
         >
           + Add Application
         </Link>
@@ -116,14 +117,14 @@ export default async function ApplicationsPage({ searchParams }) {
                   <div className="flex items-center justify-between border-t border-border bg-surface p-6">
                     <Link
                       href={`/applications/${application.id}`}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderPale px-4 py-2.5 text-sm font-medium text-primaryDark transition-colors hover:bg-lavenderSoft"
+                      className={buttonStyles("tertiary")}
                     >
                       View
                     </Link>
                     <div className="flex items-center gap-3">
                       <Link
                         href={`/applications/${application.id}/edit`}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
+                        className={buttonStyles("secondary")}
                       >
                         Edit
                       </Link>

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import { authenticate } from "./actions";
+import { buttonStyles } from "@/lib/buttonStyles";
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
@@ -44,7 +45,7 @@ export default function LoginForm() {
         <button
           type="submit"
           aria-disabled={isPending}
-          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primaryDark"
+          className={buttonStyles("primary")}
         >
           Log in
         </button>

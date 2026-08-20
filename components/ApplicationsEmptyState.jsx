@@ -1,7 +1,5 @@
 import Link from "next/link";
-
-const PRIMARY_BUTTON = "inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primaryDark";
-const SECONDARY_BUTTON = "inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender";
+import { buttonStyles } from "@/lib/buttonStyles";
 
 export default function ApplicationsEmptyState({ variant }) {
   const content = {
@@ -10,21 +8,21 @@ export default function ApplicationsEmptyState({ variant }) {
       message: "Add your first job to start tracking your job search journey.",
       href: "/applications/new",
       label: "+ Add Application",
-      buttonClass: PRIMARY_BUTTON,
+      buttonClass: buttonStyles("primary"),
     },
     filters: {
       heading: "No matches for this search",
       message: "Nothing in your applications matches the current search or filter.",
       href: "/applications",
       label: "Clear search and filters",
-      buttonClass: SECONDARY_BUTTON,
+      buttonClass: buttonStyles("secondary"),
     },
     page: {
       heading: "This page is empty",
       message: "There are no applications on this page. Go back to the first page to see your results.",
       href: "/applications",
       label: "Back to first page",
-      buttonClass: SECONDARY_BUTTON,
+      buttonClass: buttonStyles("secondary"),
     },
   }[variant];
 

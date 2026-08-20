@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { APPLICATION_STATUSES } from "@/lib/statuses";
+import { buttonStyles } from "@/lib/buttonStyles";
 
 export default function ApplicationForm({ action, application, submitLabel }) {
   const appliedDateValue = application?.appliedDate?.toISOString().slice(0, 10);
@@ -157,7 +158,7 @@ export default function ApplicationForm({ action, application, submitLabel }) {
         <button
           type="submit"
           aria-disabled={isPending}
-          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primaryDark"
+          className={buttonStyles("primary")}
         >
           {submitLabel}
         </button>

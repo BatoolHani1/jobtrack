@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { signup } from "./actions";
+import { buttonStyles } from "@/lib/buttonStyles";
 
 export default function SignupForm() {
   const [state, formAction, isPending] = useActionState(signup, { errors: {} });
@@ -67,7 +68,7 @@ export default function SignupForm() {
         <button
           type="submit"
           aria-disabled={isPending}
-          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primaryDark"
+          className={buttonStyles("primary")}
         >
           Create account
         </button>

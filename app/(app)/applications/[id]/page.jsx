@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getApplicationById } from "@/lib/applications";
 import { formatDate } from "@/lib/format";
+import { buttonStyles } from "@/lib/buttonStyles";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 
@@ -19,7 +20,7 @@ export default async function ApplicationDetailPage({ params }) {
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <Link
         href="/applications"
-        className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
+        className={`${buttonStyles("secondary")} self-start`}
       >
         Back to applications
       </Link>
@@ -80,7 +81,7 @@ export default async function ApplicationDetailPage({ params }) {
       <div className="flex justify-end gap-3">
         <Link
           href={`/applications/${application.id}/edit`}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-lavenderSoft px-4 py-2.5 text-sm font-medium text-primaryDark shadow-sm transition-colors hover:bg-lavender"
+          className={buttonStyles("secondary")}
         >
           Edit
         </Link>

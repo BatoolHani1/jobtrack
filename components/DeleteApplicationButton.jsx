@@ -1,4 +1,5 @@
 import { deleteApplication } from "@/app/(app)/applications/actions";
+import { buttonStyles } from "@/lib/buttonStyles";
 
 export default function DeleteApplicationButton({ id }) {
   return (
@@ -6,7 +7,7 @@ export default function DeleteApplicationButton({ id }) {
       <input type="hidden" name="id" value={id} />
       <button
         type="submit"
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-danger px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-dangerDark"
+        className={buttonStyles("danger")}
       >
         Delete
       </button>
