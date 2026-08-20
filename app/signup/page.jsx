@@ -2,7 +2,7 @@ import Link from "next/link";
 import SignupForm from "./SignupForm";
 
 export const metadata = {
-  title: "Sign Up | JobTrack",
+  title: "Sign Up",
 };
 
 export default function SignupPage() {

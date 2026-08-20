@@ -2,7 +2,7 @@ import ApplicationForm from "@/components/ApplicationForm";
 import { createApplication } from "@/app/(app)/applications/actions";
 
 export const metadata = {
-  title: "Add Application | JobTrack",
+  title: "Add Application",
 };
 
 export default function NewApplicationPage() {

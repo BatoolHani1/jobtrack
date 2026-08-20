@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { updateApplication } from "@/app/(app)/applications/actions";
 
 export const metadata = {
-  title: "Edit Application | JobTrack",
+  title: "Edit Application",
 };
 
 export default async function EditApplicationPage({ params }) {

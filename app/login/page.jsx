@@ -3,7 +3,7 @@ import Link from "next/link";
 import LoginForm from "./LoginForm";
 
 export const metadata = {
-  title: "Log In | JobTrack",
+  title: "Log In",
 };
 
 export default function LoginPage() {

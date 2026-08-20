@@ -10,7 +10,7 @@ import ApplicationPagination from "@/components/ApplicationPagination";
 import ApplicationsEmptyState from "@/components/ApplicationsEmptyState";
 
 export const metadata = {
-  title: "Applications | JobTrack",
+  title: "Applications",
 };
 
 export default async function ApplicationsPage({ searchParams }) {

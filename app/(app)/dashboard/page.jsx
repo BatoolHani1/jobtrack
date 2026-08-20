@@ -6,7 +6,7 @@ import ApplicationsOverTimeSection from "@/components/ApplicationsOverTimeSectio
 import ApplicationsOverTimeSkeleton from "@/components/ApplicationsOverTimeSkeleton";
 
 export const metadata = {
-  title: "Dashboard | JobTrack",
+  title: "Dashboard",
 };
 
 export default async function DashboardPage() {
