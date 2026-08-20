@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import { formatDate } from "@/lib/format";
 
 export default function RecentApplications({ applications }) {
   return (
@@ -21,13 +22,7 @@ export default function RecentApplications({ applications }) {
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusBadge status={application.status} />
-                  <span className="text-sm text-muted">
-                    {new Date(application.appliedDate).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </span>
+                  <span className="text-sm text-muted">{formatDate(application.appliedDate)}</span>
                 </div>
               </Link>
             </li>

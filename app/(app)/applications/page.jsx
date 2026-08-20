@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { getApplications, getApplicationsPageCount } from "@/lib/applications";
 import { APPLICATION_STATUSES } from "@/lib/statuses";
+import { formatDate } from "@/lib/format";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 import ApplicationSearch from "@/components/ApplicationSearch";
@@ -91,16 +92,7 @@ export default async function ApplicationsPage({ searchParams }) {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span>
-                        {new Date(application.appliedDate).toLocaleDateString(
-                          "en-GB",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          },
-                        )}
-                      </span>
+                      <span>{formatDate(application.appliedDate)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted">
                       <svg

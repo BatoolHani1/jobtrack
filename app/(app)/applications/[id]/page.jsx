@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getApplicationById } from "@/lib/applications";
+import { formatDate } from "@/lib/format";
 import StatusBadge from "@/components/StatusBadge";
 import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 
@@ -37,11 +38,7 @@ export default async function ApplicationDetailPage({ params }) {
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted">
             Applied on{" "}
-            {new Date(application.appliedDate).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            {formatDate(application.appliedDate)}
           </p>
           {application.notes ? (
             <p className="text-sm text-text">{application.notes}</p>
@@ -71,11 +68,7 @@ export default async function ApplicationDetailPage({ params }) {
                 >
                   <span className="text-text">{interview.type}</span>
                   <span className="text-muted">
-                    {new Date(interview.date).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {formatDate(interview.date)}
                   </span>
                 </li>
               ))}
