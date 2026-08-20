@@ -7,6 +7,7 @@ import DeleteApplicationButton from "@/components/DeleteApplicationButton";
 import ApplicationSearch from "@/components/ApplicationSearch";
 import ApplicationStatusFilter from "@/components/ApplicationStatusFilter";
 import ApplicationPagination from "@/components/ApplicationPagination";
+import ApplicationsEmptyState from "@/components/ApplicationsEmptyState";
 
 export const metadata = {
   title: "Applications | JobTrack",
@@ -46,21 +47,15 @@ export default async function ApplicationsPage({ searchParams }) {
       </div>
 
       {applications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center">
-          <h2 className="text-base font-medium text-text">
-            No applications yet
-          </h2>
-          <p className="mt-2 max-w-sm text-sm text-muted">
-            No applications yet — start tracking your job applications by adding
-            your first application.
-          </p>
-          <Link
-            href="/applications/new"
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primaryDark"
-          >
-            + Add Application
-          </Link>
-        </div>
+        <ApplicationsEmptyState
+          variant={
+            query || validatedStatus
+              ? "filters"
+              : currentPage > 1
+              ? "page"
+              : "empty"
+          }
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
