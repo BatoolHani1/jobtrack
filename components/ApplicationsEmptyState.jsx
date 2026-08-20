@@ -6,8 +6,8 @@ const SECONDARY_BUTTON = "inline-flex items-center justify-center gap-2 rounded-
 export default function ApplicationsEmptyState({ variant }) {
   const content = {
     empty: {
-      heading: "Nothing tracked yet",
-      message: "Add your first application to start building your job search history.",
+      heading: "No applications to track yet",
+      message: "Add your first job to start tracking your job search journey.",
       href: "/applications/new",
       label: "+ Add Application",
       buttonClass: PRIMARY_BUTTON,
