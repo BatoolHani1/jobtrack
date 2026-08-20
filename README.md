@@ -14,6 +14,8 @@ This is my field training project at FiberTech Jo, built with Next.js over 6 wee
 - Auth.js (NextAuth v5) for login and signup
 - Zod for form validation
 - bcrypt for password hashing
+- Recharts for the dashboard charts
+- use-debounce for the search input
 
 ## Running it
 
@@ -157,6 +159,44 @@ Another one: after a failed submit, React 19 resets a form that uses the `action
 
 Tagged as `v1-week4`.
 
+### Week 5: search, filtering and the dashboard
+
+Week 5 was about making JobTrack feel like a product instead of a list of rows. The applications page got search, a status filter and pagination, and the dashboard finally shows real numbers instead of the placeholder zeros it had been showing since week 1.
+
+The seed script grew to 25 applications spread over several months, because search, pagination and a chart of applications over time are all impossible to test properly with seven rows.
+
+What I built:
+
+- Search by company or job title on `/applications`
+- Filter by status, which combines with the search
+- Pagination, 9 applications per page
+- Dashboard stats: total applications and a count for each status
+- A pie chart of the status breakdown and a bar chart of applications per month
+- A recent applications list on the dashboard
+- Empty states that say what actually happened, and loading skeletons
+
+The search term, the status and the page number all live in the URL instead of in React state. That's the whole reason the applications page can still be a server component that queries Prisma directly. If the search term lived in `useState` the page would need `"use client"`, and then it couldn't touch Prisma at all, so I'd have had to build an API route and fetch from it. Keeping it in the URL also means a filtered list is a link you can share, and the back button works without any code.
+
+The list query and the count query behind pagination build their `where` clause from the same function. If they ever disagreed, the page controls would offer pages that come back empty, and each query would still look correct on its own.
+
+The four statuses used to be written out in three separate files: the badge colors, the form's dropdown and the Zod schema. The filter would have made a fourth. They're all in `lib/statuses.js` now. The validator is the one that made it worth doing, because if the form ever offered a status the validator rejected, saving would fail with an error you can't fix from the page.
+
+I built pagination even though the plan only lists it under "learn" and not under "build". The chapter I was following covers it right after search and I wanted the whole thing. The recent applications list isn't in the plan either, but that section had a "coming in a later week" badge sitting on it and finishing it seemed better than leaving it there. There are two charts rather than one because the plan asks for applications over time as a stat, and a pie chart can't show time.
+
+One thing I ran into: `mode: "insensitive"`, which every Prisma search example uses, doesn't exist on SQLite. It throws when the query runs, not when the app builds, so everything looks fine until you actually type something. It also isn't needed, because `contains` becomes SQL `LIKE` and SQLite's `LIKE` already ignores case for ordinary English text. The examples are all written for Postgres, where it is needed.
+
+Another one: SQLite has no way to group dates by month through Prisma, so the bar chart does its grouping in JavaScript. The six months have to be created first and then filled in. If you build them from the dates you have, a month with no applications disappears from the chart instead of showing as an empty bar.
+
+And another: `loading.js` shows its skeleton when you navigate into a route, but not when you only change the search params on a route you're already on. So arriving at `/applications` shows the skeleton and typing in the search box doesn't. I left it that way, since a skeleton flashing every time you pause typing would be worse than the list quietly updating.
+
+The dashboard streams instead of using `loading.js`. Its queries moved out of the page and down into the components that Suspense wraps, because Suspense suspends on whatever is doing the awaiting. With the `await` at the top of the page, the page itself is what suspends and a boundary inside it never gets reached.
+
+The last one had been there since week 1. `globals.css` was setting the font to Arial, which overrode the Geist font `layout.js` loads. The whole site had been rendering in Arial the entire time and I only noticed this week.
+
+I skipped the custom 404 page. It isn't in the plan and Next's default one works. The delete confirmation dialog still isn't built, it's been deferred since week 3.
+
+Tagged as `v1-week5`.
+
 ## Data model
 
 JobTrack stores job applications for a user, and each application can have interviews attached to it.
@@ -198,7 +238,7 @@ A few decisions worth writing down:
 
 - IDs are cuid strings rather than auto incrementing numbers, so they don't leak how many records exist and don't need converting from the URL
 - `appliedDate` is the date I actually applied, which is different from `createdAt`, the date the row was saved
-- `status` is a plain string instead of an enum because SQLite doesn't support enums. The values used in the app are Applied, Interview, Offer and Rejected
+- `status` is a plain string instead of an enum because SQLite doesn't support enums. The values used in the app are Applied, Interview, Offer and Rejected, and they live in `lib/statuses.js`
 - There are indexes on both foreign keys, since looking up children by their parent is the query that runs most often
 - `password` stores a bcrypt hash, never the password itself. It was added in week 4
 
@@ -225,8 +265,9 @@ app/
     actions.js                       validates, hashes the password, then logs you in
   (app)/
     layout.js                        navbar + sidebar shell for the dashboard pages
-    dashboard/page.jsx
-    applications/page.jsx            the list
+    dashboard/page.jsx               heading only, everything else streams in
+    applications/page.jsx            the list, reads search, status and page from the URL
+    applications/loading.js          skeleton shown while the list loads
     applications/new/page.jsx        create form
     applications/actions.js          create, update and delete server actions
     applications/[id]/page.jsx       detail page
@@ -235,14 +276,29 @@ components/
   LayoutShell.jsx                    navbar + sidebar + page content
   Navbar.jsx                         shows who's logged in
   Sidebar.jsx                        holds the sign out button
-  SidebarNav.jsx                     handles the active link highlighting
+  SidebarNav.jsx                     active link highlighting, closes the mobile sidebar
+  ApplicationSearch.jsx              writes the search term into the URL, debounced
+  ApplicationStatusFilter.jsx        writes the status into the URL
+  ApplicationPagination.jsx          page links, built from the current search params
+  ApplicationsEmptyState.jsx         a different message for each reason the list is empty
   StatCard.jsx
-  StatusBadge.jsx                    the status pill, and the colour for each status
+  TotalApplicationsCard.jsx
+  StatusBadge.jsx                    the status pill, and the color for each status
+  RecentApplications.jsx             the five most recent, on the dashboard
+  ApplicationsPieChart.jsx           status breakdown, Recharts
+  ApplicationsOverTimeChart.jsx      applications per month, Recharts
+  DashboardOverview.jsx              fetches the stats and renders the top of the dashboard
+  ApplicationsOverTimeSection.jsx    fetches the monthly counts for the bar chart
+  DashboardOverviewSkeleton.jsx      Suspense fallbacks for the two above
+  ApplicationsOverTimeSkeleton.jsx
   ApplicationForm.jsx                shared by the create and edit pages
   DeleteApplicationButton.jsx        a form with a hidden id, not a link
 lib/
   prisma.js                          single Prisma client instance, reused across hot reloads
   applications.js                    the queries the pages read from, all scoped by user
+  statuses.js                        the four status values, used everywhere they're needed
+  format.js                          one date format, used by every page that shows a date
+  buttonStyles.js                    the button classes, four variants
 prisma/
   schema.prisma                      the data model
   seed.js                            sample data
