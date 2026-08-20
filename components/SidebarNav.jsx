@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -35,6 +36,13 @@ const navItems = [
 
 export default function SidebarNav() {
   const pathname = usePathname();
+
+  useEffect(() => {
+    const toggle = document.getElementById("sidebar-toggle");
+    if (toggle) {
+      toggle.checked = false;
+    }
+  }, [pathname]);
 
   return (
     <nav className="flex flex-col gap-1 px-3">
