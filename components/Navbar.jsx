@@ -39,25 +39,13 @@ export default async function Navbar() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className="rounded-full p-2 text-muted hover:bg-lavenderSoft hover:text-primary"
-          aria-label="Notifications"
-        >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
-            <path d="M10 2a6 6 0 0 0-6 6v3.586l-1.707 1.707A1 1 0 0 0 3 15h14a1 1 0 0 0 .707-1.707L16 11.586V8a6 6 0 0 0-6-6Zm0 16a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 10 18Z" />
-          </svg>
-        </button>
-
-        <div className="flex items-center gap-2 border-l border-border pl-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-lavenderSoft text-sm font-medium text-text">
-            {initial}
-          </span>
-          <span className="hidden text-sm font-medium text-text sm:inline">
-            {displayName}
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-lavenderSoft text-sm font-medium text-text">
+          {initial}
+        </span>
+        <span className="hidden text-sm font-medium text-text sm:inline">
+          {displayName}
+        </span>
       </div>
     </header>
   );

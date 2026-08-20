@@ -5,7 +5,7 @@ export default function LandingPage() {
   return (
     <>
       <header className="border-b border-border bg-surface">
-        <div className="flex items-center justify-between px-6 py-4 md:px-8 lg:px-12">
+        <div className="px-6 py-4 md:px-8 lg:px-12">
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/jobtrack-icon.svg"
@@ -19,13 +19,6 @@ export default function LandingPage() {
               <span className="text-primaryDark">Job</span>
               <span className="text-primary">Track</span>
             </span>
-          </Link>
-
-          <Link
-            href="/dashboard"
-            className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primaryDark"
-          >
-            Get Started
           </Link>
         </div>
       </header>
