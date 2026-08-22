@@ -4,200 +4,186 @@ JobTrack is a job application tracker. It's a place to keep track of the jobs I'
 
 This is my field training project at FiberTech Jo, built with Next.js over 6 weeks.
 
-## Stack
+**Live at [jobtrack-swart.vercel.app](https://jobtrack-swart.vercel.app/)**
 
-- Next.js 16 (App Router)
-- React 19
-- JavaScript, no TypeScript
-- Tailwind CSS 4
-- Prisma ORM with SQLite
-- Auth.js (NextAuth v5) for login and signup
-- Zod for form validation
-- bcrypt for password hashing
-- Recharts for the dashboard charts
-- use-debounce for the search input
+You can sign up for your own account, or log in with `batool@example.com` / `password123` to see the sample data.
 
-## Running it
+## Features
 
-You need a `.env` file before the database commands will work. Copy the example and fill it in:
+- Sign up and log in. Each account only ever sees its own applications
+- Add, view, edit and delete applications
+- Search by company or job title, and filter by status
+- Pagination once the list gets long
+- A dashboard with totals per status, a status breakdown chart, and applications per month
+- Interviews are linked to applications and show on the detail page. They come from the seed data; there's no form for adding one yet
+
+## Screenshots
+
+### Dashboard
+
+![Dashboard showing totals, status breakdown and recent applications](docs/screenshots/dashboard.png)
+
+### Applications over time
+
+![Bar chart of applications per month](docs/screenshots/dashboard-bar.png)
+
+### Applications list
+
+![The applications list with search and status filter](docs/screenshots/applications.png)
+
+### Application detail
+
+![An application detail page showing notes and interviews](docs/screenshots/application-detail.png)
+
+### Add and edit
+
+![The add application form](docs/screenshots/new-application.png)
+![The edit form, pre-filled with an existing application](docs/screenshots/edit-application.png)
+
+## Tech Stack
+
+| Part       | What it uses                                |
+| ---------- | ------------------------------------------- |
+| Framework  | Next.js 16, App Router                      |
+| UI         | React 19, Tailwind CSS 4                    |
+| Language   | JavaScript, no TypeScript                   |
+| Database   | Turso, hosted SQLite                        |
+| ORM        | Prisma 6, through the libSQL driver adapter |
+| Auth       | Auth.js (NextAuth v5), credentials provider |
+| Validation | Zod                                         |
+| Passwords  | bcrypt                                      |
+| Charts     | Recharts                                    |
+| Tests      | Vitest and React Testing Library            |
+| Hosting    | Vercel                                      |
+
+## Project Structure
+
+```
+app/           routes, layouts and server actions
+components/    shared UI
+lib/           database queries, validation schemas and helpers
+prisma/        schema, migrations and the seed script
+__tests__/     tests
+docs/          screenshots used in this file
+```
+
+## Prerequisites
+
+Before running the project, make sure you have these:
+
+- Git
+- Node.js 20 or newer, and npm
+- A Turso account. The free tier is enough
+- The Turso CLI, installed with `curl -sSfL https://get.tur.so/install.sh | bash`
+  The app talks to Turso over HTTPS rather than reading a local database file, so you need a database of your own before it will start. Turso's [docs](https://docs.turso.tech/) cover creating one.
+
+## Quick Start
+
+### 1. Clone the Project
+
+```bash
+git clone https://github.com/BatoolHani1/jobtrack.git
+cd jobtrack
+npm install
+```
+
+### 2. Create a Turso Database
+
+```bash
+turso auth signup
+turso db create jobtrack
+turso db show jobtrack --url
+turso db tokens create jobtrack
+```
+
+Keep the URL and the token. You need both in the next step.
+
+### 3. Set the Environment Variables
 
 ```bash
 cp .env.example .env
 ```
 
-It needs two things. `DATABASE_URL` points at the SQLite file, and `AUTH_SECRET` is the key used to sign the session cookie. You can generate a secret with:
+Then fill in all four values:
+
+| Variable             | Value                                       |
+| -------------------- | ------------------------------------------- |
+| `TURSO_DATABASE_URL` | the `libsql://` URL from `turso db show`    |
+| `TURSO_AUTH_TOKEN`   | the token from `turso db tokens create`     |
+| `AUTH_SECRET`        | generate one with `openssl rand -base64 32` |
+| `DATABASE_URL`       | leave it as `file:./dev.db`                 |
+
+Important notes:
+
+- `DATABASE_URL` is not the database the app uses. Nothing connects to it. It is there so the Prisma CLI can parse the schema, which still declares `url = env("DATABASE_URL")`
+- The app reads `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` instead, because the connection string is passed to the driver adapter in `lib/prisma.js` rather than coming from the schema
+- The token is a live credential for the database. Do not commit it
+
+### 4. Create the Tables
+
+A new Turso database is empty. Generate the schema and apply it:
 
 ```bash
-openssl rand -base64 32
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > baseline.sql
+turso db shell jobtrack < baseline.sql
 ```
 
-Then:
+Check it worked:
 
 ```bash
-npm install
-npx prisma migrate dev
+turso db shell jobtrack ".tables"
+```
+
+You should see `Application`, `Interview` and `User`.
+
+Important notes:
+
+- The files in `prisma/migrations/` are not used here. They are SQLite DDL written for a local file, and the one that adds the password column uses `PRAGMA` statements that do not behave the same over HTTP. The baseline above produces the same schema without them
+- `prisma migrate deploy` also writes a `_prisma_migrations` table to track what it applied. Running the SQL through the Turso CLI does not, so Turso has the schema but no migration history. That is fine here, because Prisma Migrate never talks to Turso. Schema changes are written locally and the result is applied to Turso by hand
+
+### 5. Seed and Run
+
+```bash
 npx prisma db seed
 npm run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000).
 
-The seed script creates one user you can log in as:
+**`npx prisma db seed` deletes everything before it inserts.** It runs against whatever `TURSO_DATABASE_URL` points at, so do not run it against a database you care about.
 
-- Email: `batool@example.com`
-- Password: `password123`
+## Useful Commands
 
-Or sign up for a new account at `/signup`, which starts you off with an empty list.
+| Command                                       | What it does                                                 |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `npm run dev`                                 | starts the dev server                                        |
+| `npm run build`                               | production build                                             |
+| `npm test`                                    | runs the tests in watch mode                                 |
+| `npm run test:run`                            | runs the tests once and exits                                |
+| `npx prisma db seed`                          | wipes and reseeds the database                               |
+| `npx prisma studio`                           | opens a GUI at localhost:5555                                |
+| `node --env-file=.env prisma/test-queries.js` | runs five queries against the database as a connection check |
 
-The database is a single SQLite file at `prisma/dev.db`. It isn't committed to the repo, since the migration files in `prisma/migrations/` recreate it from scratch and the seed script fills it with sample data.
+Note that `npx prisma studio` reads `DATABASE_URL`, so it opens the local `prisma/dev.db` file, not Turso. Use `turso db shell jobtrack` to look at the live data.
 
-To browse the data in a GUI:
+## Testing
 
 ```bash
-npx prisma studio
+npm run test:run
 ```
 
-## Progress
+12 tests across four files:
 
-### Week 1: foundations and project setup
+| File                                         | What it covers                                                          |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
+| `__tests__/validation.test.js`               | the Zod schemas for applications and signup                             |
+| `__tests__/format.test.js`                   | the date formatter                                                      |
+| `__tests__/StatusBadge.test.jsx`             | the status pill, including the fallback for an unknown status           |
+| `__tests__/ApplicationStatusFilter.test.jsx` | the status dropdown, with a mocked router and a real select interaction |
 
-The goal for week 1 was getting the app structure working: a navbar, a sidebar, and a few pages I can click between. No database or real data yet, everything is static or placeholder.
+The pages are not covered. They are async Server Components, which Vitest cannot render, so they are checked by hand. End to end tests would be the way to cover them properly.
 
-I also added a landing page at `/` on top of the plan, just to make the project feel a bit more finished. It links into the dashboard.
-
-What I built:
-
-- Set up the Next.js project (App Router) with Tailwind CSS
-- A landing page at `/` with a hero section and a single call to action
-- The navbar and sidebar only show up on the dashboard pages, not on the landing page
-- Sidebar highlights whichever page you're currently on
-- Sidebar collapses into a hamburger menu on mobile
-- A purple color theme across the app
-
-Pages so far:
-
-| Route               | What's there                          |
-| ------------------- | ------------------------------------- |
-| `/`                 | landing page, links to `/dashboard`   |
-| `/dashboard`        | placeholder stats, nothing real yet   |
-| `/applications`     | empty list + "Add Application" button |
-| `/applications/new` | form UI only, doesn't save anything   |
-
-At this point "Get Started" linked straight to `/dashboard`, since there was no auth yet.
-
-Tagged as `v1-week1`.
-
-### Week 2: database and data modeling
-
-Week 2 was about designing the schema and getting a real database connected. The pages aren't wired up to it yet, that comes in week 3, so everything this week was done through scripts.
-
-What I built:
-
-- Set up Prisma with SQLite as the local database
-- Designed the schema: User, Application and Interview
-- Ran the first migration, which created `prisma/dev.db` and the three tables
-- Wrote a seed script with 7 sample applications and 7 interviews across all four statuses
-- Wrote a scratch script with a few queries to confirm reads and writes actually work
-
-One thing I ran into: I pinned Prisma to version 6 on purpose. Version 7's client generator only outputs TypeScript files and I'm not very familiar with its syntax. `prisma init` also downloads its template at runtime, so even with version 6 installed it scaffolded a version 7 style config. I fixed the generator provider and deleted the config file it created.
-
-Tagged as `v1-week2`.
-
-### Week 3: CRUD operations
-
-Week 3 connected the pages to the database. By the end of it every application can be created, read, edited and deleted from the app itself, with nothing done through scripts.
-
-What I built:
-
-- `/applications` reads the list from the database instead of showing placeholder cards
-- A detail page at `/applications/[id]` showing everything about one application, including its interviews
-- The "Add Application" form now saves, using a server action
-- An edit page at `/applications/[id]/edit` that reuses the same form, pre-filled with the current values
-- Delete, from both the list cards and the detail page
-- Queries moved into `lib/applications.js` so the pages don't hold Prisma calls directly
-- The three server actions live together in `app/(app)/applications/actions.js`
-
-The create and edit pages share one `ApplicationForm` component. It takes the action to run and, optionally, an existing application to fill the fields from. Nothing in it uses `useState`, since a plain form with `name` attributes on the inputs gives the server action everything it needs, so at this point it was still a server component like the rest of the app. That changed in week 4.
-
-One thing I ran into: after saving a new application and redirecting to the list, the new row didn't show up. It was in the database the whole time, Next.js was just serving a cached render of the page. The fix is `revalidatePath("/applications")` inside the action, and it has to come before `redirect(...)`, because `redirect` works by throwing so nothing after it runs.
-
-Deleting an application also deletes its interviews, and I didn't write any code for that. It comes from `onDelete: Cascade` in the schema from week 2, so the database handles it.
-
-Applications were still assigned to the seeded user at this point, since there was no login yet. The create action looked that user up with `prisma.user.findFirst()`. That line went away in week 4, once there was a real session to read from.
-
-Tagged as `v1-week3`.
-
-### Week 4: authentication and validation
-
-Week 4 turned JobTrack from something one person uses into something several people can. Before this week every application belonged to the single user the seed script created. Now you sign up, log in, and only ever see your own.
-
-What I built:
-
-- A signup page at `/signup` that creates a user with a bcrypt hashed password
-- A login page at `/login` using Auth.js with a credentials provider
-- Every query scoped to the logged in user, so two accounts never see each other's applications
-- Route protection, so visiting `/dashboard` or `/applications` while logged out sends you to the login page
-- A sign out button at the bottom of the sidebar
-- The logged in user's name in the navbar, falling back to their email if they haven't set one
-- Zod validation on the application form, with error messages under each field
-
-There are two auth files and that's on purpose. `auth.config.js` holds the configuration and nothing else. `auth.js` holds the credentials provider, which imports bcrypt and Prisma. They're split because route protection runs on the Edge runtime, where neither bcrypt nor Prisma works, so the proxy file can only import the config half.
-
-Signing up logs you straight in rather than sending you to the login page afterwards. The `signIn` call has to sit outside the `try/catch` around creating the user, for the same reason `redirect` did in week 3: it works by throwing, and the catch block would swallow it.
-
-Applications are scoped in two places. The pages read the session and pass the user id into the queries in `lib/applications.js`, so the list and detail pages only ever return your own rows. The edit and delete actions look the application up by both id and user id before touching it, and return a 404 if nothing comes back. That second check is the one that actually matters, because a server action is just a POST and someone could send one carrying another user's application id.
-
-Route protection sits on top of that as a separate layer. It stops the request before the page renders, which is faster and means a logged out visitor never sees a broken page. But it's a convenience, not the security boundary. The checks inside the actions are what protect the data.
-
-The form has two layers of validation for the same reason. `required` and `type="url"` are the browser's checks, and they're instant and free. Zod runs on the server after submit and is the one that can't be switched off in dev tools. Both are worth having: the browser catches honest mistakes without a round trip, and Zod is what stops bad data reaching the database.
-
-One thing I ran into: Next.js 16 renamed the `middleware.js` file convention to `proxy.js`. A leftover `middleware.js` is ignored with no build error and no warning at all, so the route protection would have quietly done nothing and every page would have stayed public. Nothing tells you it isn't running. The way I confirmed it was working was seeing `Proxy` listed in the `next build` output.
-
-Another one: after a failed submit, React 19 resets a form that uses the `action` prop. That wiped every field, so fixing one wrong value meant retyping the whole form. The fix was to return the submitted values from the action alongside the errors, and use those as the `defaultValue` for each input. The inputs stay uncontrolled, so there's still no `useState` or `onChange` anywhere in the form.
-
-`ApplicationForm` did become a client component this week. Showing errors that come back from the server needs `useActionState`, and that's a React hook. It and `SidebarNav` are the only two client components in the app.
-
-Tagged as `v1-week4`.
-
-### Week 5: search, filtering and the dashboard
-
-Week 5 was about making JobTrack feel like a product instead of a list of rows. The applications page got search, a status filter and pagination, and the dashboard finally shows real numbers instead of the placeholder zeros it had been showing since week 1.
-
-The seed script grew to 25 applications spread over several months, because search, pagination and a chart of applications over time are all impossible to test properly with seven rows.
-
-What I built:
-
-- Search by company or job title on `/applications`
-- Filter by status, which combines with the search
-- Pagination, 9 applications per page
-- Dashboard stats: total applications and a count for each status
-- A pie chart of the status breakdown and a bar chart of applications per month
-- A recent applications list on the dashboard
-- Empty states that say what actually happened, and loading skeletons
-
-The search term, the status and the page number all live in the URL instead of in React state. That's the whole reason the applications page can still be a server component that queries Prisma directly. If the search term lived in `useState` the page would need `"use client"`, and then it couldn't touch Prisma at all, so I'd have had to build an API route and fetch from it. Keeping it in the URL also means a filtered list is a link you can share, and the back button works without any code.
-
-The list query and the count query behind pagination build their `where` clause from the same function. If they ever disagreed, the page controls would offer pages that come back empty, and each query would still look correct on its own.
-
-The four statuses used to be written out in three separate files: the badge colors, the form's dropdown and the Zod schema. The filter would have made a fourth. They're all in `lib/statuses.js` now. The validator is the one that made it worth doing, because if the form ever offered a status the validator rejected, saving would fail with an error you can't fix from the page.
-
-I built pagination even though the plan only lists it under "learn" and not under "build". The chapter I was following covers it right after search and I wanted the whole thing. The recent applications list isn't in the plan either, but that section had a "coming in a later week" badge sitting on it and finishing it seemed better than leaving it there. There are two charts rather than one because the plan asks for applications over time as a stat, and a pie chart can't show time.
-
-One thing I ran into: `mode: "insensitive"`, which every Prisma search example uses, doesn't exist on SQLite. It throws when the query runs, not when the app builds, so everything looks fine until you actually type something. It also isn't needed, because `contains` becomes SQL `LIKE` and SQLite's `LIKE` already ignores case for ordinary English text. The examples are all written for Postgres, where it is needed.
-
-Another one: SQLite has no way to group dates by month through Prisma, so the bar chart does its grouping in JavaScript. The six months have to be created first and then filled in. If you build them from the dates you have, a month with no applications disappears from the chart instead of showing as an empty bar.
-
-And another: `loading.js` shows its skeleton when you navigate into a route, but not when you only change the search params on a route you're already on. So arriving at `/applications` shows the skeleton and typing in the search box doesn't. I left it that way, since a skeleton flashing every time you pause typing would be worse than the list quietly updating.
-
-The dashboard streams instead of using `loading.js`. Its queries moved out of the page and down into the components that Suspense wraps, because Suspense suspends on whatever is doing the awaiting. With the `await` at the top of the page, the page itself is what suspends and a boundary inside it never gets reached.
-
-The last one had been there since week 1. `globals.css` was setting the font to Arial, which overrode the Geist font `layout.js` loads. The whole site had been rendering in Arial the entire time and I only noticed this week.
-
-I skipped the custom 404 page. It isn't in the plan and Next's default one works. The delete confirmation dialog still isn't built, it's been deferred since week 3.
-
-Tagged as `v1-week5`.
-
-## Data model
+## Data Model
 
 JobTrack stores job applications for a user, and each application can have interviews attached to it.
 
@@ -232,76 +218,78 @@ erDiagram
     }
 ```
 
-There are two one to many relationships here. One user has many applications, and one application has many interviews. In both cases the relationship is stored as a foreign key on the child table, so `Application.userId` points back to a user and `Interview.applicationId` points back to an application. Both use `onDelete: Cascade`, which means deleting an application also deletes the interviews that belong to it.
+There are two one to many relationships. One user has many applications, and one application has many interviews. In both cases the relationship is stored as a foreign key on the child table, so `Application.userId` points back to a user and `Interview.applicationId` points back to an application. Both use `onDelete: Cascade`, so deleting an application also deletes the interviews that belong to it.
 
-A few decisions worth writing down:
-
-- IDs are cuid strings rather than auto incrementing numbers, so they don't leak how many records exist and don't need converting from the URL
-- `appliedDate` is the date I actually applied, which is different from `createdAt`, the date the row was saved
-- `status` is a plain string instead of an enum because SQLite doesn't support enums. The values used in the app are Applied, Interview, Offer and Rejected, and they live in `lib/statuses.js`
+- IDs are cuid strings rather than auto incrementing numbers, so they do not leak how many records exist and do not need converting from the URL
+- `appliedDate` is the date I actually applied. `createdAt` is the date the row was saved.
+- `status` is a plain string instead of an enum because SQLite has no enums. The four values live in `lib/statuses.js`
 - There are indexes on both foreign keys, since looking up children by their parent is the query that runs most often
-- `password` stores a bcrypt hash, never the password itself. It was added in week 4
+- `password` stores a bcrypt hash, never the password itself.
 
-There's no session table, which looks like something is missing until you know why. Sessions are stored in a signed cookie rather than the database, so there's nothing to keep track of on our side.
+Sessions are stored in a signed cookie rather than the database, so there is nothing to keep track of on our side.
 
-## Folder structure
+## Progress
 
-```
-auth.config.js                       auth settings and the route protection rule
-auth.js                              the credentials provider, bcrypt and Prisma live here
-proxy.js                             runs before every page and checks whether you're allowed in
-app/
-  layout.js                          root layout, fonts + metadata
-  page.js                            landing page
-  globals.css                        brand colors as Tailwind tokens
-  icon.svg                           favicon
-  login/
-    page.jsx
-    LoginForm.jsx                    reads callbackUrl so you land back where you were
-    actions.js
-  signup/
-    page.jsx
-    SignupForm.jsx
-    actions.js                       validates, hashes the password, then logs you in
-  (app)/
-    layout.js                        navbar + sidebar shell for the dashboard pages
-    dashboard/page.jsx               heading only, everything else streams in
-    applications/page.jsx            the list, reads search, status and page from the URL
-    applications/loading.js          skeleton shown while the list loads
-    applications/new/page.jsx        create form
-    applications/actions.js          create, update and delete server actions
-    applications/[id]/page.jsx       detail page
-    applications/[id]/edit/page.jsx  edit form
-components/
-  LayoutShell.jsx                    navbar + sidebar + page content
-  Navbar.jsx                         shows who's logged in
-  Sidebar.jsx                        holds the sign out button
-  SidebarNav.jsx                     active link highlighting, closes the mobile sidebar
-  ApplicationSearch.jsx              writes the search term into the URL, debounced
-  ApplicationStatusFilter.jsx        writes the status into the URL
-  ApplicationPagination.jsx          page links, built from the current search params
-  ApplicationsEmptyState.jsx         a different message for each reason the list is empty
-  StatCard.jsx
-  TotalApplicationsCard.jsx
-  StatusBadge.jsx                    the status pill, and the color for each status
-  RecentApplications.jsx             the five most recent, on the dashboard
-  ApplicationsPieChart.jsx           status breakdown, Recharts
-  ApplicationsOverTimeChart.jsx      applications per month, Recharts
-  DashboardOverview.jsx              fetches the stats and renders the top of the dashboard
-  ApplicationsOverTimeSection.jsx    fetches the monthly counts for the bar chart
-  DashboardOverviewSkeleton.jsx      Suspense fallbacks for the two above
-  ApplicationsOverTimeSkeleton.jsx
-  ApplicationForm.jsx                shared by the create and edit pages
-  DeleteApplicationButton.jsx        a form with a hidden id, not a link
-lib/
-  prisma.js                          single Prisma client instance, reused across hot reloads
-  applications.js                    the queries the pages read from, all scoped by user
-  statuses.js                        the four status values, used everywhere they're needed
-  format.js                          one date format, used by every page that shows a date
-  buttonStyles.js                    the button classes, four variants
-prisma/
-  schema.prisma                      the data model
-  seed.js                            sample data
-  test-queries.js                    scratch script to check the queries work
-  migrations/                        generated SQL, committed so the database can be rebuilt
-```
+The project was built to a 6 week plan. A short note for each week's progress:
+
+### Week 1: Foundations and Project Setup
+
+App shell only. Next.js with the App Router, Tailwind, a landing page and three placeholder routes. The navbar and sidebar show on the dashboard pages but not on the landing page. No database yet.
+
+Tagged as `v1-week1`.
+
+### Week 2: Database and Data Modeling
+
+Prisma with SQLite, the User, Application and Interview schema, the first migration, a seed script and a scratch script to confirm reads and writes work. The pages were not wired up yet.
+
+Prisma is pinned to version 6 on purpose. Version 7's client generator only outputs TypeScript.
+
+Tagged as `v1-week2`.
+
+### Week 3: CRUD Operations
+
+Create, read, edit and delete, all from the app. Queries moved into `lib/applications.js`. The create and edit pages share one form component, with no `useState` in it, since a plain form with `name` attributes gives a server action everything it needs.
+
+Deleting an application also deletes its interviews, and I wrote no code for it. That comes from `onDelete: Cascade` in the schema.
+
+New rows did not appear after redirecting, because Next.js was serving a cached render. `revalidatePath` fixes it, and has to run before `redirect`.
+
+Tagged as `v1-week3`.
+
+### Week 4: Authentication and Validation
+
+Signup, login, route protection, and Zod validation. Every query scoped to the logged in user.
+
+The two auth files are deliberate. Route protection runs on the Edge runtime, where bcrypt and Prisma do not work, so the config is split from the credentials provider.
+
+Applications are scoped in two places. The pages pass the user id into the queries, and the edit and delete actions check both id and user id. The second check is the real boundary, because a server action is just a POST.
+
+Next.js 16 renamed `middleware.js` to `proxy.js`. A leftover `middleware.js` is ignored silently, so route protection would have done nothing and every page would have stayed public.
+
+Tagged as `v1-week4`.
+
+### Week 5: Search, Filtering and the Dashboard
+
+Search, status filter, pagination, dashboard stats, two charts, empty states and skeletons. The seed grew to 25 applications so there was enough data to test against.
+
+Search, status and page all live in the URL rather than React state, which is why the applications page can still be a server component querying Prisma directly.
+
+`mode: "insensitive"` does not exist on SQLite and throws at query time. It is also unnecessary, since SQLite's `LIKE` already ignores case for English text.
+
+SQLite cannot group dates by month through Prisma, so the bar chart groups in JavaScript, creating the months first so an empty one still shows.
+
+Tagged as `v1-week5`.
+
+### Week 6: Testing, Deployment and Shipping
+
+Moved to Turso, deployed to Vercel, added Vitest and React Testing Library with 12 tests, and rewrote this README.
+
+Turso is SQLite over HTTPS, which Prisma's query engine cannot speak, so queries go through the libSQL driver adapter. Prisma still compiles the SQL. Not one query changed.
+
+The adapter defaults to ISO date strings while Prisma's SQLite driver stores epoch milliseconds, so `timestampFormat: "unixepoch-ms"` is required or every date reads back wrong.
+
+Vercel caches dependencies, so Prisma's postinstall hook stops firing after the first build. `"postinstall": "npx prisma generate"` fixes it.
+
+Writing the validation tests meant moving the Zod schemas into `lib/validation.js`, since importing a `"use server"` file pulled in Prisma, auth and bcrypt.
+
+Tagged as `v1-week6`.
