@@ -10,7 +10,10 @@ export default function ApplicationForm({ action, application, submitLabel }) {
   const [state, formAction, isPending] = useActionState(action, undefined);
 
   return (
-    <form action={formAction} className="flex flex-col gap-5 rounded-xl border border-border bg-surface p-6 shadow-sm">
+    <form
+      action={formAction}
+      className="flex flex-col gap-5 rounded-xl border border-border bg-surface p-6 shadow-sm"
+    >
       {application && <input type="hidden" name="id" value={application.id} />}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="title" className="text-sm font-medium text-text">
@@ -22,7 +25,7 @@ export default function ApplicationForm({ action, application, submitLabel }) {
           type="text"
           required
           defaultValue={state?.values?.title ?? application?.title}
-          placeholder="e.g. Frontend Engineer"
+          placeholder="Frontend Engineer"
           aria-describedby="title-error"
           className="rounded-lg border border-border px-3 py-2 text-sm text-text placeholder:text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
@@ -45,7 +48,7 @@ export default function ApplicationForm({ action, application, submitLabel }) {
           type="text"
           required
           defaultValue={state?.values?.company ?? application?.company}
-          placeholder="e.g. Acme Inc."
+          placeholder="Amazon"
           aria-describedby="company-error"
           className="rounded-lg border border-border px-3 py-2 text-sm text-text placeholder:text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
@@ -65,7 +68,9 @@ export default function ApplicationForm({ action, application, submitLabel }) {
         <select
           id="status"
           name="status"
-          defaultValue={state?.values?.status ?? application?.status ?? "Applied"}
+          defaultValue={
+            state?.values?.status ?? application?.status ?? "Applied"
+          }
           aria-describedby="status-error"
           className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         >
