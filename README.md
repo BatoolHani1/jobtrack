@@ -2,8 +2,6 @@
 
 JobTrack is a job application tracker. It's a place to keep track of the jobs I've applied to, what stage each one is at (Applied, Interview, Offer, Rejected), and notes for each one.
 
-This is my field training project at FiberTech Jo, built with Next.js over 6 weeks.
-
 **Live at [jobtrack-swart.vercel.app](https://jobtrack-swart.vercel.app/)**
 
 You can sign up for your own account, or log in with `batool@example.com` / `password123` to see the sample data.
